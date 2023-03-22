@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -7,49 +8,54 @@ public class PlayerBehaviour : MonoBehaviour
 {
     // Attributes
     private float speed;
-    private bool inWall;
-    private int wallQuadrant = 0;
-
+    public GameObject manager;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
+    private AnimationManager am;
 
-    public Sprite[] spriteArray = new Sprite[3];
- 
+    private Animator animator;
+
+    public Sprite[] spriteArray = new Sprite[3];   //For default sprite. Needs updating later for idling in different directions.
+
+    string CharacterIsFacingDirection = "";
+
 
     void Start()
     {
         speed = 4f;
-        inWall = false;
+        rb = GetComponent<Rigidbody2D>(); //Rigid Body for Player
+        sr = GetComponent<SpriteRenderer>();    //Sprite Renderer for Player. Use later.
+        am = manager.GetComponent<AnimationManager>();  //Animation Manager Class.
 
-        rb = GetComponent<Rigidbody2D>();
-        sr = GetComponent<SpriteRenderer>();
-        //TODO: Change to gate location
-        sr.sprite = spriteArray[0];
+        sr.sprite = spriteArray[0]; //Needs updating for idle sprites.
+
+        animator = GetComponent<Animator>();
     }
 
     void FixedUpdate()
     {
-        PlayerMovementFunc();
+
+        PlayerMovementFunc(); //Should assign the character's direction to CharacterIsFacing Direction variable - "Up", "Down", "LeftOrRight". Used in PlayerAttack Script to determine orienation for the attack animation.
+
     }
 
     void PlayerMovementFunc()
     {
+
+
         Vector2 directionalInput = GetDirectionalInput();
         Vector2 velocity = CalcVelocity(directionalInput);
         SetPlayerOrientation(directionalInput, velocity);
-
-        if (inWall)
-        {
-            RestrictVelocity(velocity);
-        }
-
         SetVelocity(velocity);
+
+        
+        
     }
 
     Vector2 GetDirectionalInput()
     {
-        float inputHorizontal = Input.GetAxisRaw("Horizontal");
-        float inputVertical = Input.GetAxisRaw("Vertical");
+        float inputHorizontal = Input.GetAxisRaw("Horizontal"); //Inputs are A and D.
+        float inputVertical = Input.GetAxisRaw("Vertical");     //Inputs are W and S.
 
         //Direction =
         return new Vector2(inputHorizontal, inputVertical);
@@ -57,138 +63,87 @@ public class PlayerBehaviour : MonoBehaviour
 
     Vector2 CalcVelocity(Vector2 direction) 
     { 
-        return new Vector2(direction.x * speed, direction.y * speed);
+        return new Vector2(direction.x * speed, direction.y * speed);   //Moves sprite in accordance to player input in GetDirecitonalInput();
     }
 
     void SetPlayerOrientation(Vector2 direction, Vector2 velocity)
     {
         // if we are receving vertical directional input
+
+
         if (direction.y != 0)
         {
             if (velocity.y > 0)
             {
-                sr.sprite = spriteArray[1];
+
+                animator.runtimeAnimatorController = am.GetWalkingAnimatorController(1);        //Access AnimationController in AnimationManager script to know which animation in the list to play according to index. 
+
+                CharacterIsFacingDirection = "Up";  //Updates player orientation as a string for comparison in player Attack function. If CharacterIsFacingDirection = "Up" then the attack animation for Up will be accessed, for example.
+                    Debug.Log(CharacterIsFacingDirection); //For testing, console should output current direction.
+         
             }
             else
             {
-                sr.sprite = spriteArray[2];
+                animator.runtimeAnimatorController = am.GetWalkingAnimatorController(2);
+
+                    CharacterIsFacingDirection = "Down";
+                    Debug.Log(CharacterIsFacingDirection);
+                
+
             }
         }
         else if (direction.x != 0)
         {
+
+            animator.runtimeAnimatorController = am.GetWalkingAnimatorController(0);
             sr.sprite = spriteArray[0];
+
+
+            if (direction.x < 0)
+            {
+                CharacterIsFacingDirection = "Left";
+
+            }
+            else
+            {
+               CharacterIsFacingDirection = "Right";
+            }
+            
+            Debug.Log(CharacterIsFacingDirection);
+
+
         }
         
-        // if we are receving horizontal directional input
+        //Flips Horizontal Sprite Left or Right depending on user input for A or D.
         if (direction.x != 0)
         {
             //sr.flipX = velocity.x < 0;
             if (velocity.x < 0)
             {
-                sr.flipX = true;
+                 sr.flipX = true;
+
             }
             else
             {
                 sr.flipX = false;
             }
         }
+       
     }
 
-    void RestrictVelocity(Vector2 velocity)
-    {
-        switch (wallQuadrant)
-        {
-            // Top-left quadrant
-            case 0:
-                if (velocity.x < 0)
-                    velocity.x = 0;
-                if (velocity.y > 0)
-                    velocity.y = 0;
-                break;
-            // Top-right quadrant
-            case 1:
-                if (velocity.x > 0)
-                    velocity.x = 0;
-                if (velocity.y > 0)
-                    velocity.y = 0;
-                break;
-            // Bottom-left quadrant
-            case 2:
-                if (velocity.x < 0)
-                    velocity.x = 0;
-                if (velocity.y < 0)
-                    velocity.y = 0;
-                break;
-            // Bottom-right quadrant
-            case 3:
-                if (velocity.x > 0)
-                    velocity.x = 0;
-                if (velocity.y < 0)
-                    velocity.y = 0;
-                break;
-        }
-    }
+
 
     void SetVelocity(Vector2 velocity)
     {
         rb.velocity = velocity;
     }
 
-    private void OnCollisionEnter2D(Collision2D other)
-    {
-        if (other.gameObject.tag == "Wall")
-        {
-            CalcWallQuadrant();
-            inWall = true;
-        }
-    }
 
-    // Bug fix incase player gets stuck in wall
-    //private void OnCollisionStay2D(Collision2D other)
-    //{
-    //    if (other.gameObject.tag == "Wall")
-    //    {
-    //        CalcWallQuadrant();
-    //    }
-    //}
 
-    private void OnCollisionExit2D(Collision2D other)
-    {
-        if (other.gameObject.tag == "Wall")
-        {
-            inWall = false;
-        }
-    }
-    
-    void CalcWallQuadrant()
-    {
-        Vector3 playerPos = transform.position;
 
-        if (playerPos.x < 0)
-        {
-            // bottom-left quadrant
-            if (playerPos.y < 0)
-            {
-                wallQuadrant = 2;
-            }
-            // top-left quadrant
-            else 
-            {
-                wallQuadrant = 0;
-            }
-        }
-        else
-        {
-            // bottom-right quadrant
-            if (playerPos.y < 0)
-            {
-                wallQuadrant = 3;
-            }
-            // top-right quadrant
-            else
-            {
-                wallQuadrant = 1;
-            }
-        }
+    public string GetDirection()
+    {
+        return CharacterIsFacingDirection; //Public function, Returns the retrieved String to use in PlayerAttack class.
     }
 }
+
