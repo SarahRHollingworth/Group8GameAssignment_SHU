@@ -21,14 +21,19 @@ public class PlayerBehaviour : MonoBehaviour
 
     string CharacterIsFacingDirection = "";
 
+    const int maxHealth = 6;
+    int currentHealth;
 
     void Start()
     {
+
+        
         speed = 4f;
         rb = GetComponent<Rigidbody2D>(); //Rigid Body for Player
         sr = GetComponent<SpriteRenderer>();    //Sprite Renderer for Player. Use later.
         atk = attack.GetComponent<PlayerAttack>();
         am = manager.GetComponent<AnimationManager>();  //Animation Manager Class.
+        currentHealth = maxHealth;
 
 
         sr.sprite = spriteArray[0]; //Needs updating for idle sprites.
@@ -40,7 +45,12 @@ public class PlayerBehaviour : MonoBehaviour
     {
 
         PlayerMovementFunc(); //Should assign the character's direction to CharacterIsFacing Direction variable - "Up", "Down", "LeftOrRight". Used in PlayerAttack Script to determine orienation for the attack animation.
+        
+    }
 
+    void Update()
+    {
+        DecrementPlayerHealth();
     }
 
     void PlayerMovementFunc()
@@ -68,11 +78,25 @@ public class PlayerBehaviour : MonoBehaviour
      Vector2 CalcVelocity(Vector2 direction) 
     {
 
+
+        //if (atk.IsAttacking())
+        //{
+        //    return new Vector2((direction.x * speed) / 2, (direction.y * speed) / 2);
+        //}
+        float speedModifier = 1.0f;
+
         if (atk.IsAttacking())
         {
-            return new Vector2((direction.x * speed) / 2, (direction.y * speed) / 2);
+            speedModifier *= 0.5f;
         }
-        return new Vector2(direction.x * speed, direction.y * speed);   //Moves sprite in accordance to player input in GetDirecitonalInput();
+
+        if (atk.UseSpeedUp())
+        {
+
+            speedModifier *= 2.0f;
+        }
+
+        return new Vector2(direction.x * speed * speedModifier, direction.y * speed * speedModifier);   //Moves sprite in accordance to player input in GetDirecitonalInput();
 
     }
 
@@ -185,12 +209,39 @@ public class PlayerBehaviour : MonoBehaviour
         rb.velocity = velocity;
     }
 
+    void DecrementPlayerHealth() //For Testing
+    {
+
+        if (Input.GetKeyDown(KeyCode.X)){
+            currentHealth--;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Debug.Log(currentHealth);
+        }
+    }
+
 
 
 
     public string GetDirection()
     {
         return CharacterIsFacingDirection; //Public function, Returns the retrieved String to use in PlayerAttack class.
+    }
+
+    public int GetPlayerHealth()
+    {
+        return currentHealth;
+    }
+
+    public void IncrementHealth(int amount)
+    {
+        
+        currentHealth += amount;
+        if(currentHealth > maxHealth){
+            currentHealth = maxHealth;
+        }
     }
 }
 

@@ -370,6 +370,7 @@
 "Assets/Scripts/AnimationManager.cs"
 "Assets/Scripts/PlayerAttack.cs"
 "Assets/Scripts/PlayerBehaviour.cs"
+"Assets/Scripts/SpikeTrap.cs"
 -langversion:9.0
 
 /deterministic

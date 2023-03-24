@@ -59,6 +59,7 @@
     <Compile Include="Assets\Scripts\AnimationManager.cs" />
     <Compile Include="Assets\Scripts\PlayerBehaviour.cs" />
     <Compile Include="Assets\Scripts\PlayerAttack.cs" />
+    <Compile Include="Assets\Scripts\SpikeTrap.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
