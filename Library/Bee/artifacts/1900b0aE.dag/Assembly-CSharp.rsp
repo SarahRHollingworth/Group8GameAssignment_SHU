@@ -371,6 +371,7 @@
 "Assets/Scripts/PlayerAttack.cs"
 "Assets/Scripts/PlayerBehaviour.cs"
 "Assets/Scripts/SpikeTrap.cs"
+"Assets/Scripts/UIManager.cs"
 -langversion:9.0
 
 /deterministic

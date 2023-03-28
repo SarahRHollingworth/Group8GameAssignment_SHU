@@ -22,7 +22,7 @@ public class PlayerAttack : MonoBehaviour
     float attackTimer;
     const float maxAttackTimer = 0.2f;
     bool attacking;
-    
+
     float basicAttackCooldown;
     const float maxBasicAttackCooldown = 0.3f;
     bool canAttack;
@@ -36,7 +36,7 @@ public class PlayerAttack : MonoBehaviour
     bool speedUp;
 
     float speedUpCooldown;
-    const float maxSpeedUpCooldown = 15.0f;
+    const float maxSpeedUpCooldown = 5.0f;
     bool canAttackSpeedUp;
 
 
@@ -49,7 +49,7 @@ public class PlayerAttack : MonoBehaviour
     void Start()
     {
         playerBehaviour = player.GetComponent<PlayerBehaviour>();
-        
+
         am = manager.GetComponent<AnimationManager>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
@@ -65,27 +65,27 @@ public class PlayerAttack : MonoBehaviour
         attackTimer = maxAttackTimer;
         attacking = false;
 
-        spikeTrapCooldown = maxSpikeTrapCooldown;
+        spikeTrapCooldown = 0.0f;
         canAttackSpikeTrap = true;
 
         speedUpTimer = maxSpeedUpTimer;
         speedUp = false;
 
-        speedUpCooldown = maxSpeedUpCooldown;
+        speedUpCooldown = 0.0f;
         canAttackSpeedUp = true;
 
 
-        healMeCooldown = maxHealMeCooldown;
+        healMeCooldown = 0.0f;
         canAttackHealMe = true;
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
         AttackFunc();
-      
+
 
 
     }
@@ -95,7 +95,7 @@ public class PlayerAttack : MonoBehaviour
     void AttackFunc()
     {
 
-    Debug.Log("Attack says direction is " + playerBehaviour.GetDirection());
+        Debug.Log("Attack says direction is " + playerBehaviour.GetDirection());
 
 
         //This should be a switch statement for Case "Right", "Up", "Down", but it just exists as is for proof of concept. Fix this later.
@@ -103,13 +103,13 @@ public class PlayerAttack : MonoBehaviour
         UseBasicAttack(basicAtackInput);
         string skillUsed = InputSkillAttack();
         UseSkill(ref skillUsed);
-        
+
     }
 
 
 
 
-     bool GetPlayerBasicAttackInput()
+    bool GetPlayerBasicAttackInput()
     {
         if (!canAttack)
         {
@@ -121,14 +121,14 @@ public class PlayerAttack : MonoBehaviour
         {
             attacking = true;
             return true;
-           
+
         }
         else
         {
             return false;
         }
 
- 
+
     }
 
 
@@ -147,11 +147,11 @@ public class PlayerAttack : MonoBehaviour
 
     void UseBasicAttack(bool basicAtackInput)
     {
-       
+
 
         if (basicAtackInput)    //Note in playerBehaviour class, player velocity is set to 1/2 when player uses their basic attack
         {
-          
+
             sr.enabled = true;
             animator.enabled = true;
 
@@ -201,39 +201,41 @@ public class PlayerAttack : MonoBehaviour
     }
 
 
-   string InputSkillAttack() 
+    string InputSkillAttack()
     {
         if (Input.GetKey(KeyCode.E))
         {
             return "spikeTrap";
 
 
-        }else if (Input.GetKey(KeyCode.F))
+        } else if (Input.GetKey(KeyCode.F))
         {
             return "speedup";
-        }else if (Input.GetKey(KeyCode.Q))
+        } else if (Input.GetKey(KeyCode.Q))
         {
             return "healme";
         }
         else return "";
-       
+
     }
 
     void UseSkill(ref string skillUsed) {
 
         if (skillUsed == "spikeTrap" && canAttackSpikeTrap)
         {
-
+            spikeTrapCooldown = maxSpikeTrapCooldown;
             canAttackSpikeTrap = false;
             LaySpikeTrap();
 
-        }else if(skillUsed == "speedup" && canAttackSpeedUp)
+        } else if (skillUsed == "speedup" && canAttackSpeedUp)
         {
+            speedUpCooldown = maxSpeedUpCooldown;
             speedUp = true;
             canAttackSpeedUp = false;
 
-        }else if(skillUsed == "healme" && canAttackHealMe)
-        {   
+        } else if (skillUsed == "healme" && canAttackHealMe)
+        {
+            healMeCooldown = maxHealMeCooldown;
             canAttackHealMe = false;
             Healme();
         }
@@ -253,7 +255,7 @@ public class PlayerAttack : MonoBehaviour
             if (spikeTrapCooldown < 0)
             {
                 canAttackSpikeTrap = true;
-                spikeTrapCooldown = maxSpikeTrapCooldown;
+                spikeTrapCooldown = 0.0f;
             }
         }
 
@@ -264,7 +266,7 @@ public class PlayerAttack : MonoBehaviour
             if (speedUpCooldown < 0)
             {
                 canAttackSpeedUp = true;
-                speedUpCooldown = maxSpeedUpCooldown;
+                speedUpCooldown = 0.0f;
             }
         }
 
@@ -272,10 +274,10 @@ public class PlayerAttack : MonoBehaviour
         {
             healMeCooldown -= Time.deltaTime;
 
-            if(healMeCooldown < 0)
+            if (healMeCooldown < 0)
             {
                 canAttackHealMe = true;
-                healMeCooldown = maxHealMeCooldown;
+                healMeCooldown = 0.0f;
             }
         }
     }
@@ -296,10 +298,10 @@ public class PlayerAttack : MonoBehaviour
 
     void LaySpikeTrap()
     {
-            Vector3 playerPos = player.transform.position;
-            Vector3 spikeTrapSpawnPoint = playerPos + playerBottomCentreOffset;
-            Instantiate(spikeTrap, spikeTrapSpawnPoint, player.transform.rotation);
-        
+        Vector3 playerPos = player.transform.position;
+        Vector3 spikeTrapSpawnPoint = playerPos + playerBottomCentreOffset;
+        Instantiate(spikeTrap, spikeTrapSpawnPoint, player.transform.rotation);
+
     }
 
     void Healme()
@@ -307,7 +309,7 @@ public class PlayerAttack : MonoBehaviour
         int amount = 1;
         playerBehaviour.IncrementHealth(amount);
 
-       
+
     }
 
 
@@ -317,12 +319,46 @@ public class PlayerAttack : MonoBehaviour
 
     }
 
-    public bool UseSpeedUp()    
+    public bool UseSpeedUp()
     {
         return speedUp;
     }
 
- 
+    public float GetCooldownSpikeTrap(){
+
+        return spikeTrapCooldown;
+
     }
 
-   
+    public float GetCooldownSpeedUp()
+    {
+
+        return speedUpCooldown;
+
+    }
+
+    public float GetCooldownHealMe()
+    {
+
+        return healMeCooldown;
+
+    }
+
+    public float GetMaxCooldownSpikeTrap()
+    {
+        return maxSpikeTrapCooldown;
+    }
+
+    public float GetMaxCooldownSpeedUp()
+    {
+        return maxSpeedUpCooldown;
+    }
+
+    public float GetMaxCooldownHealMe()
+    {
+        return maxHealMeCooldown;
+    }
+
+}
+
+
