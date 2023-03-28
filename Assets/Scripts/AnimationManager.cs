@@ -1,15 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Animations;
 using UnityEngine;
 
 
 public class AnimationManager : MonoBehaviour
 {
 
-    public List<AnimatorController> attackAnimations; 
-    public List<AnimatorController> walkAnimations;
+    public List<RuntimeAnimatorController> attackAnimations; 
+    public List<RuntimeAnimatorController> walkAnimations;
 
 
     void Start()
@@ -27,16 +26,14 @@ public class AnimationManager : MonoBehaviour
         
     }
 
-    public AnimatorController GetAttackAnimatorController(int index)    //Used in PlayerAttack Script to access animation list elements for the attack directions.
+    public RuntimeAnimatorController GetAttackAnimatorController(int index)    //Used in PlayerAttack Script to access animation list elements for the attack directions.
     {
         return attackAnimations[index];
     }
 
-    public AnimatorController GetWalkingAnimatorController(int index)   //Used in PlayerBehaviour Script to access animation list elements for the walking directions.
+    public RuntimeAnimatorController GetWalkingAnimatorController(int index)   //Used in PlayerBehaviour Script to access animation list elements for the walking directions.
     {
         return walkAnimations[index];
     }
 }
 
-
-//Errors are just Visual Studio being weird I think. Ignore it.

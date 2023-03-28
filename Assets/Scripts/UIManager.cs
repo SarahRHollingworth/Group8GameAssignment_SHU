@@ -52,7 +52,7 @@ public class UIManager : MonoBehaviour
         if (currentSpeedUpCooldown < 0)
             currentSpeedUpCooldown = 0;
         yScale = atk.GetCooldownSpeedUp() / attackMaxCooldowns[1];
-        cooldownUI[1].transform.localScale = new Vector3(1.0f, yScale, 1.0f);
+        cooldownUI[1].transform.localScale = new Vector3(2.28f, yScale * 2.28f, 1.0f); //2.28 is the resize value to match completed sprite
 
         float currentHealMeCooldown = atk.GetCooldownHealMe();
         if (currentHealMeCooldown < 0)

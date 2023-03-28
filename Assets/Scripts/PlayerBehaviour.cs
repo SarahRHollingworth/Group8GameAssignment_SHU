@@ -14,6 +14,7 @@ public class PlayerBehaviour : MonoBehaviour
     private SpriteRenderer sr;
     private AnimationManager am;
     private PlayerAttack atk;
+    private BoxCollider2D collider;
 
     private Animator animator;
 
@@ -23,6 +24,8 @@ public class PlayerBehaviour : MonoBehaviour
 
     const int maxHealth = 6;
     int currentHealth;
+    private bool alive;
+
 
     void Start()
     {
@@ -33,7 +36,9 @@ public class PlayerBehaviour : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();    //Sprite Renderer for Player. Use later.
         atk = attack.GetComponent<PlayerAttack>();
         am = manager.GetComponent<AnimationManager>();  //Animation Manager Class.
+        collider = GetComponent<BoxCollider2D>();
         currentHealth = maxHealth;
+        alive = true;
 
 
         sr.sprite = spriteArray[0]; //Needs updating for idle sprites.
@@ -43,8 +48,10 @@ public class PlayerBehaviour : MonoBehaviour
 
     void FixedUpdate()
     {
-
-        PlayerMovementFunc(); //Should assign the character's direction to CharacterIsFacing Direction variable - "Up", "Down", "LeftOrRight". Used in PlayerAttack Script to determine orienation for the attack animation.
+        if (alive)
+        {
+            PlayerMovementFunc(); //Should assign the character's direction to CharacterIsFacing Direction variable - "Up", "Down", "LeftOrRight". Used in PlayerAttack Script to determine orienation for the attack animation.
+        }
         
     }
 
@@ -193,7 +200,7 @@ public class PlayerBehaviour : MonoBehaviour
                 sr.sprite = spriteArray[0];
                 break;
             default:
-                Debug.Log("This condition should never be met, but it's here for bug testing");
+                Debug.Log("This condition should only be met before the player first moves once");
                 sr.sprite = spriteArray[0];
                 break;
         }
@@ -242,6 +249,28 @@ public class PlayerBehaviour : MonoBehaviour
         if(currentHealth > maxHealth){
             currentHealth = maxHealth;
         }
+    }
+
+    public void SetPlayerSpriteEnabled(bool enabled)
+    {
+        sr.enabled = enabled;
+    }
+
+    public void TakeDamage(int amount)
+    {
+        --currentHealth;
+
+        if (currentHealth < 1)
+        {
+            alive = false;
+            sr.enabled = false;
+            atk.SetActive(false);
+        }
+    }
+
+    public void EnableHitbox(bool enabled)
+    {
+        collider.enabled = enabled;
     }
 }
 

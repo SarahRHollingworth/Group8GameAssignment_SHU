@@ -11,6 +11,7 @@ public class PlayerAttack : MonoBehaviour
     public GameObject manager;
     public GameObject spikeTrap;
     private SpriteRenderer sr;
+    private Rigidbody2D rb;
 
     private PlayerBehaviour playerBehaviour;
     private AnimationManager am;
@@ -20,7 +21,7 @@ public class PlayerAttack : MonoBehaviour
     private Vector3 playerBottomCentreOffset;
 
     float attackTimer;
-    const float maxAttackTimer = 0.2f;
+    const float maxAttackTimer = 0.5f;
     bool attacking;
 
     float basicAttackCooldown;
@@ -53,6 +54,7 @@ public class PlayerAttack : MonoBehaviour
         am = manager.GetComponent<AnimationManager>();
         animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
 
         float playerYSize = player.GetComponent<SpriteRenderer>().bounds.size.y;
         float spikeTrapYSize = spikeTrap.GetComponent<SpriteRenderer>().bounds.size.y;
@@ -83,7 +85,7 @@ public class PlayerAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        transform.position = player.transform.position;
         AttackFunc();
 
 
@@ -119,6 +121,8 @@ public class PlayerAttack : MonoBehaviour
 
         if (attacking || Input.GetKeyDown(KeyCode.Space))
         {
+            playerBehaviour.EnableHitbox(false);
+            rb.simulated = true;
             attacking = true;
             return true;
 
@@ -151,7 +155,7 @@ public class PlayerAttack : MonoBehaviour
 
         if (basicAtackInput)    //Note in playerBehaviour class, player velocity is set to 1/2 when player uses their basic attack
         {
-
+            playerBehaviour.SetPlayerSpriteEnabled(false);
             sr.enabled = true;
             animator.enabled = true;
 
@@ -193,11 +197,14 @@ public class PlayerAttack : MonoBehaviour
 
     void StopAttacking()
     {
+        playerBehaviour.SetPlayerSpriteEnabled(true);
+        rb.simulated = false;
         animator.enabled = false;
         attacking = false;
         sr.enabled = false;
         canAttack = false;
         attackTimer = maxAttackTimer;
+        playerBehaviour.EnableHitbox(true);
     }
 
 
@@ -312,6 +319,14 @@ public class PlayerAttack : MonoBehaviour
 
     }
 
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.tag == "Enemy")
+        {
+            Destroy(other.gameObject);
+        }
+    }
+
 
     public bool IsAttacking() //Halves Speed while using basic attack for balancing purposes.
     {
@@ -359,6 +374,10 @@ public class PlayerAttack : MonoBehaviour
         return maxHealMeCooldown;
     }
 
+    public void SetActive(bool active)
+    {
+        this.gameObject.SetActive(active);
+    }
 }
 
 
